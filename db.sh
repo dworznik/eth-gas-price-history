@@ -16,5 +16,6 @@ cd $(dirname $DB_PATH) || error_exit "Cannot change directory $DB_PATH"
 name_db='gas.db'
 
 sqlite3 $name_db <<'EOL'
-  create table gas_price (timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, data TEXT);
+  CREATE TABLE gas_price (timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, data TEXT);
+  CREATE UNIQUE INDEX idx_gas_price_timestamp ON gas_price (timestamp);
 EOL
