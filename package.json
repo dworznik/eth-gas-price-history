@@ -1,0 +1,25 @@
+{
+  "name": "@dworznik/gas-price-history",
+  "version": "1.0.0",
+  "description": "",
+  "main": "",
+  "scripts": {
+    "fetch": "docker-compose up -d fetch",
+    "server": "docker-compose up -d server",
+    "db-dump": "docker-compose run db-dump",
+    "db-init": "docker-compose run db-init",
+    "db-delete": "docker-compose run db-delete"
+  },
+  "author": "Patryk Dworznik <github@dworznik.com>",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^0.20.0",
+    "express": "^4.17.1",
+    "sqlite": "^3.0.6",
+    "sqlite3": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.8",
+    "@types/sqlite3": "^3.1.6"
+  }
+}

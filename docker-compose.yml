@@ -1,0 +1,60 @@
+version: '2'
+services:
+  fetch:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - API_KEY
+      - DB_PATH
+      - INTERVAL
+    volumes:
+    - db:/usr/src/app/db
+    command: node fetch.js
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - API_KEY
+      - DB_PATH
+      - SERVER_PORT
+    ports:
+      - "3000:3000"
+    expose:
+      - 3000
+    volumes:
+      - db:/usr/src/app/db
+    command: node server.js
+  db-init:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - API_KEY
+      - DB_PATH
+    volumes:
+      - db:/usr/src/app/db
+    command: sh db.sh
+  db-delete:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - API_KEY
+      - DB_PATH
+    volumes:
+      - db:/usr/src/app/db
+    command: rm $DB_PATH
+  db-dump:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - API_KEY
+      - DB_PATH
+    volumes:
+      - db:/usr/src/app/db
+    command: sh dump.sh
+volumes:
+  db:
