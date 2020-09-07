@@ -1,5 +1,6 @@
 const cors = require('cors');
 const express = require('express');
+const rateLimit = require('express-rate-limit');
 const sqlite3 = require('sqlite3').verbose();
 const { open } = require('sqlite');
 
@@ -9,6 +10,12 @@ const DATE_FMT = /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2})?$/;
 
 const app = express()
 const port = process.env.SERVER_PORT;
+
+
+const limiter = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW),
+  max: parseInt(process.env.RATE_LIMIT)
+});
 
 const asyncHandler = fn => (req, res, next) => {
   return Promise
@@ -75,6 +82,7 @@ const buildQuery = (from, to, res) => buildSelect(res) + buildWhere(from, to, re
 (async function () {
   const db = await open(DB_PATH, { mode: sqlite3.OPEN_READONLY });
 
+  app.use(limiter);
   app.use(cors());
   app.options('*', cors());
 

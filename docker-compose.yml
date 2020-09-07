@@ -19,6 +19,8 @@ services:
       - API_KEY
       - DB_PATH
       - SERVER_PORT
+      - RATE_LIMIT_WINDOW
+      - RATE_LIMIT
     ports:
       - "3000:3000"
     expose:
