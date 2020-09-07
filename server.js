@@ -3,12 +3,18 @@ const express = require('express');
 const rateLimit = require('express-rate-limit');
 const Memcached = require('memcached-promise');
 const responseTime = require('response-time');
+const Sentry = require("@sentry/node");
 const sqlite3 = require('sqlite3').verbose();
 const { open } = require('sqlite');
 
 const DB_PATH = process.env.DB_PATH;
 
 const DATE_FMT = /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2})?$/;
+
+Sentry.init({
+  dsn: process.env.SERVER_SENTRY_URL,
+  tracesSampleRate: 1.0,
+});
 
 const app = express()
 const port = process.env.SERVER_PORT;
@@ -115,6 +121,7 @@ const cachedFn = (cache, fetchFn, queryFn, keyFn) => async (...args) => {
   }));
 
   app.use((err, req, res, next) => {
+    Sentry.captureException(err);
     console.error(err);
     res.status(500).json({ error: err.message })
   })
