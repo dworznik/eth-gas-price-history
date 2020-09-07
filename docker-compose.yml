@@ -21,6 +21,8 @@ services:
       - SERVER_PORT
       - RATE_LIMIT_WINDOW
       - RATE_LIMIT
+      - MEMCACHED_LOCATION
+      - MEMCACHED_EXPIRATION
     ports:
       - "3000:3000"
     expose:
@@ -28,6 +30,10 @@ services:
     volumes:
       - db:/usr/src/app/db
     command: node server.js
+  memcached:
+      image: memcached:alpine
+      ports:
+        - '11211:11211'
   db-init:
     build:
       context: .

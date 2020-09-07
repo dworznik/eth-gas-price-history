@@ -1,6 +1,8 @@
 const cors = require('cors');
 const express = require('express');
 const rateLimit = require('express-rate-limit');
+const Memcached = require('memcached-promise');
+const responseTime = require('response-time');
 const sqlite3 = require('sqlite3').verbose();
 const { open } = require('sqlite');
 
@@ -11,6 +13,8 @@ const DATE_FMT = /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2})?$/;
 const app = express()
 const port = process.env.SERVER_PORT;
 
+const memcached = new Memcached(process.env.MEMCACHED_LOCATION,
+  { maxExpiration: parseInt(process.env.MEMCACHED_EXPIRATION) });
 
 const limiter = rateLimit({
   windowMs: parseInt(process.env.RATE_LIMIT_WINDOW),
@@ -79,11 +83,25 @@ const buildWhere = (from, to, res) => {
 
 const buildQuery = (from, to, res) => buildSelect(res) + buildWhere(from, to, res);
 
+const cachedFn = (cache, fetchFn, queryFn, keyFn) => async (...args) => {
+  const k = keyFn(args);
+  let val = await cache.get(k);
+  if (val) return val;
+  const query = queryFn(...args);
+  val = await fetchFn(query);
+  await cache.set(k, val);
+  return val;
+}
+
+
 (async function () {
   const db = await open(DB_PATH, { mode: sqlite3.OPEN_READONLY });
 
+  const fetchRows = cachedFn(memcached, q => db.all(q), buildQuery, x => x.join(''));
+
   app.use(limiter);
   app.use(cors());
+  app.use(responseTime());
   app.options('*', cors());
 
   app.get('/gas-price', asyncHandler(async (req, res) => {
@@ -91,9 +109,7 @@ const buildQuery = (from, to, res) => buildSelect(res) + buildWhere(from, to, re
     const to = req.query.to;
     const resolution = req.query.res;
 
-    const query = buildQuery(from, to, resolution);
-    console.log('Query: ' + query);
-    const rows = await db.all(query);
+    const rows = await fetchRows(from, to, resolution);
     const data = rows.map(trans);
     res.json({ error: '', data });
   }));
