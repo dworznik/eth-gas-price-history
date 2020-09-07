@@ -20,7 +20,7 @@ npm run server
 ```
 
 ```
-curl http://localhost:3000/gas-price?from=2020-09-01&to=2020-09-04%2012:00
+curl http://localhost:3000/gas-price?from=2020-09-01&to=2020-09-04T12:00
 ```
 
 
