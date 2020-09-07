@@ -1,4 +1,5 @@
-const express = require('express')
+const cors = require('cors');
+const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const { open } = require('sqlite');
 
@@ -42,10 +43,10 @@ const buildSelect = res => {
     case 'day':
       return 'select date(timestamp) as date, avg(json_extract(data, \'$.average\')) as average, avg(json_extract(data, \'$.fast\')) as fast, avg(json_extract(data, \'$.fastest\')) as fastest, avg(json_extract(data, \'$.safeLow\')) as safeLow, min(json_extract(data, \'$.blockNum\')) as blockNum from gas_price';
     case 'hour':
-      return 'select strftime(\'%Y-%m-%dT%H\', timestamp) || \':00\' as date, avg(json_extract(data, \'$.average\')) as average, avg(json_extract(data, \'$.fast\')) as fast, avg(json_extract(data, \'$.fastest\')) as fastest, avg(json_extract(data, \'$.safeLow\')) as safeLow, min(json_extract(data, \'$.blockNum\')) as blockNum from gas_price';
+      return 'select strftime(\'%Y-%m-%dT%H\', timestamp) || \':00Z\' as date, avg(json_extract(data, \'$.average\')) as average, avg(json_extract(data, \'$.fast\')) as fast, avg(json_extract(data, \'$.fastest\')) as fastest, avg(json_extract(data, \'$.safeLow\')) as safeLow, min(json_extract(data, \'$.blockNum\')) as blockNum from gas_price';
     case '':
     case undefined:
-      return 'select strftime(\'%Y-%m-%dT%H:%M:%S\', timestamp) as date, json_extract(data, \'$.average\') as average, json_extract(data, \'$.fast\') as fast, json_extract(data, \'$.fastest\') as fastest, json_extract(data, \'$.safeLow\') as safeLow, json_extract(data, \'$.blockNum\') as blockNum from gas_price';
+      return 'select strftime(\'%Y-%m-%dT%H:%M:%SZ\', timestamp) as date, json_extract(data, \'$.average\') as average, json_extract(data, \'$.fast\') as fast, json_extract(data, \'$.fastest\') as fastest, json_extract(data, \'$.safeLow\') as safeLow, json_extract(data, \'$.blockNum\') as blockNum from gas_price';
     default:
       throw Error('Invalid res value');
   }
@@ -73,6 +74,9 @@ const buildQuery = (from, to, res) => buildSelect(res) + buildWhere(from, to, re
 
 (async function () {
   const db = await open(DB_PATH, { mode: sqlite3.OPEN_READONLY });
+
+  app.use(cors());
+  app.options('*', cors());
 
   app.get('/gas-price', asyncHandler(async (req, res) => {
     const from = req.query.from;
