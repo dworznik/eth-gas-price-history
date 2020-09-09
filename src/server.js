@@ -19,6 +19,9 @@ Sentry.init({
 const app = express()
 const port = process.env.SERVER_PORT;
 
+const allowedOrigins = process.env.CORS_ORIGINS.split(',');
+console.log(allowedOrigins);
+
 const memcached = new Memcached(process.env.MEMCACHED_LOCATION,
   { maxExpiration: parseInt(process.env.MEMCACHED_EXPIRATION) });
 
@@ -105,10 +108,23 @@ const cachedFn = (cache, fetchFn, queryFn, keyFn) => async (...args) => {
 
   const fetchRows = cachedFn(memcached, q => db.all(q), buildQuery, x => x.join(''));
 
+  const corsConf = {
+    methods: ['GET'], origin:
+      function (origin, callback) {
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.indexOf(origin) === -1) {
+          const msg = 'The CORS policy for this site does not ' +
+            'allow access from the specified Origin.';
+          return callback(new Error(msg), false);
+        }
+        return callback(null, true);
+      }
+  };
+
   app.use(limiter);
-  app.use(cors());
+  app.use(cors(corsConf));
   app.use(responseTime());
-  app.options('*', cors());
+  app.options('*', cors(corsConf));
 
   app.get('/gas-price', asyncHandler(async (req, res) => {
     const from = req.query.from;

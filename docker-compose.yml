@@ -23,6 +23,7 @@ services:
       - RATE_LIMIT
       - MEMCACHED_LOCATION
       - MEMCACHED_EXPIRATION
+      - CORS_ORIGINS
     ports:
       - "3000:3000"
     expose:
