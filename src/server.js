@@ -20,7 +20,6 @@ const app = express()
 const port = process.env.SERVER_PORT;
 
 const allowedOrigins = process.env.CORS_ORIGINS.split(',');
-console.log(allowedOrigins);
 
 const memcached = new Memcached(process.env.MEMCACHED_LOCATION,
   { maxExpiration: parseInt(process.env.MEMCACHED_EXPIRATION) });
@@ -106,7 +105,7 @@ const cachedFn = (cache, fetchFn, queryFn, keyFn) => async (...args) => {
 (async function () {
   const db = await open(DB_PATH, { mode: sqlite3.OPEN_READONLY });
 
-  const fetchRows = cachedFn(memcached, q => db.all(q), buildQuery, x => x.join(''));
+  const fetchRows = cachedFn(memcached, q => db.all(q), buildQuery, x => 'gas-price:' + x.join(''));
 
   const corsConf = {
     methods: ['GET'], origin:
