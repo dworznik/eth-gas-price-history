@@ -1,11 +1,11 @@
-FROM node:11
+FROM node:12
 
 RUN apt-get update && apt-get install -y sqlite3
 
 WORKDIR /usr/src/app
 
-COPY package.json package-lock.json ./
-RUN npm ci
+COPY package.json yarn.lock ./
+RUN yarn install --frozen-lockfile
 
 COPY *.sh ./
-COPY src/ ./
+COPY dist/ ./
