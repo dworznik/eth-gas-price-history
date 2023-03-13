@@ -28,7 +28,7 @@
     "ramda": "^0.27.1",
     "response-time": "^2.3.2",
     "sqlite": "^3.0.6",
-    "sqlite3": "^5.0.0",
+    "sqlite3": "^5.1.5",
     "web3": "^1.2.11"
   },
   "devDependencies": {
